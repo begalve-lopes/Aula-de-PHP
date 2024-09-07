@@ -32,17 +32,12 @@ class SerieController extends Controller
 
     public function store(SeriesFormRequest $request){
         $series=$this->repository->add($request);
-        $SerieList=User::all();
-        foreach ($SerieList as $index=>$user) {
-            $email=new SeriesCreated(
-                $series->nome,
-                $series->id,
-                $request->seansonsQty,
-                $request->episodesPerSeanson,
-            );
-            $when=now()->addSeconds($index*5);
-            Mail::to($user)->later($when,$email);
-        }
+        \App\Events\SeriesCreated::dispatch(
+            $series->nome,
+            $series->id,
+            $request->seansonsQty,
+            $request->episodesPerSeanson
+        );
         return to_route('series.index')->with('mensagem.Sucesso',"Série {$request->nome} adicionada com sucesso!");
     }
 
