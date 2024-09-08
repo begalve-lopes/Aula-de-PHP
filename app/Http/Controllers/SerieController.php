@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use Exception;
 use App\Mail\SeriesCreated;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -87,18 +87,22 @@ class SerieController extends Controller
         // Atualiza os episódios existentes
         $episodes = $serie->episodes;
 
-        foreach ($episodes as $episode) {
-            $episode->update([
-                'number' => $episode->number,
-            ]);
+        if (!isset($episodes) || empty($episodes)) {
+            $episodes = Episode::where('season_id', $season->id)->get();
+        } else {
+            foreach ($episodes as $episode) {
+                $episode->update([
+                    'number' => $episode->number,
+                ]);
+            }
         }
 
         // Cria novos episódios se necessário
         foreach ($serie->seasons as $season) {
             for ($e = $season->episodes->count() + 1; $e <= $request->episodesPerSeanson; $e++) {
-                Episode::create([
-                    'season_id' => $season->id,
-                    'number' => $e,
+                $episode = Episode::create([
+                    'number' => 2,
+                    'season_id' => 1, // substitua 1 pelo valor correto da season_id
                 ]);
             }
         }
