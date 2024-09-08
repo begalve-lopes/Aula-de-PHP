@@ -22,7 +22,8 @@ class SeriesFormRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'nome'=>['max:129','min:3']
+            'nome'=>['max:129','min:3'],
+            'cover' => 'file|mimes:jpeg,png,jpg,gif', // Define regras de validação para o arquivo
         ];
     }
 

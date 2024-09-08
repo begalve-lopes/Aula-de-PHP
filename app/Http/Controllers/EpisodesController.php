@@ -8,9 +8,6 @@ use Illuminate\Support\Facades\DB;
 
 class EpisodesController extends Controller
 {
-    public function __construct(private EpisodiosRepository $repository){
-
-    }
     public function index(Season $season,Request $request){
         return view('episodes.index',['episodes'=>$season->episodes,
         'mensagemSucesso'=>session('mensagem.Sucesso')
@@ -18,7 +15,11 @@ class EpisodesController extends Controller
     }
 
     public function update(Request $request,Season $season){
-        $episodes=$this->repository->upt($request,$season);
-        return to_route('episodes.index',$season->id)->with('mensagem.Sucesso','Episodeos marcado como assistido');
+            $watchedEpisodes = $request->episodes;
+            $season->episodes->each(function (Episode $episode) use ($watchedEpisodes) {
+                $episode->watched = in_array($episode->id, $watchedEpisodes);
+            });
+            $season->push();
+            return to_route('episodes.index',$season->id)->with('mensagem.Sucesso','Episodeos marcado como assistido');
     }
 }

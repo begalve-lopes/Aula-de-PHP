@@ -31,6 +31,8 @@ class SerieController extends Controller
     }
 
     public function store(SeriesFormRequest $request){
+        $coverPath = $request->file('cover')->store('series_cover', 'public');
+        $request->coverPath=$coverPath;
         $series=$this->repository->add($request);
         \App\Events\SeriesCreated::dispatch(
             $series->nome,
@@ -50,8 +52,57 @@ class SerieController extends Controller
         return view('series.edit', ['serie' => $series]);
     }
 
-    public function update(Serie $series, SeriesFormRequest $request){
-        $series->seasons()->with('episodes')->update($request->all());
+    public function update( SeriesFormRequest $request, $id)
+    {
+        $serie = Serie::find($id);
+
+        if (!$serie) {
+            // Trate o erro caso a série não exista
+            // Por exemplo:
+            throw new Exception('Série não encontrada');
+        }
+
+        $serie->update([
+            'nome' => $request->nome,
+            'cover' => $request->coverPath,
+        ]);
+
+        // Atualiza as temporadas existentes
+        $seasons = $serie->seasons;
+
+        foreach ($seasons as $season) {
+            $season->update([
+                'number' => $season->number,
+            ]);
+        }
+
+        // Cria novas temporadas se necessário
+        for ($s = $seasons->count() + 1; $s <= $request->seansonsQty; $s++) {
+            Season::create([
+                'series_id' => $serie->id,
+                'number' => $s,
+            ]);
+        }
+
+        // Atualiza os episódios existentes
+        $episodes = $serie->episodes;
+
+        foreach ($episodes as $episode) {
+            $episode->update([
+                'number' => $episode->number,
+            ]);
+        }
+
+        // Cria novos episódios se necessário
+        foreach ($serie->seasons as $season) {
+            for ($e = $season->episodes->count() + 1; $e <= $request->episodesPerSeanson; $e++) {
+                Episode::create([
+                    'season_id' => $season->id,
+                    'number' => $e,
+                ]);
+            }
+        }
+
         return to_route('series.index')->with('mensagem.Sucesso', "Série {$series->nome} atualizado com sucesso! ");
     }
 }
