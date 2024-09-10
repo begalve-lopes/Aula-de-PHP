@@ -1,8 +1,9 @@
 <x-layouts title="Temporadas {!! $series->nome !!}">
     <div class="d-flex justify-content-center">
-        <img src="{{ asset('storage/' . $series->cover ) }}" style="height: 400px"
-            class="img-fluid "
-        >
+       @if($series->cover)
+            <img src="{{ asset('storage/' . $series->cover ) }}" style="height: 400px"
+                 class="img-fluid ">
+       @endif
     </div>
     <ul class="list-group ">
        @foreach ($seasons as $season)

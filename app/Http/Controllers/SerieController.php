@@ -31,7 +31,9 @@ class SerieController extends Controller
     }
 
     public function store(SeriesFormRequest $request){
-        $coverPath = $request->file('cover')->store('series_cover', 'public');
+        $coverPath = $request->hasFile('cover') ?
+            $request->file('cover')
+                ->store('series_cover', 'public'):null;
         $request->coverPath=$coverPath;
         $series=$this->repository->add($request);
         \App\Events\SeriesCreated::dispatch(
@@ -55,12 +57,6 @@ class SerieController extends Controller
     public function update( SeriesFormRequest $request, $id)
     {
         $serie = Serie::find($id);
-
-        if (!$serie) {
-            // Trate o erro caso a série não exista
-            // Por exemplo:
-            throw new Exception('Série não encontrada');
-        }
 
         $serie->update([
             'nome' => $request->nome,
@@ -101,12 +97,12 @@ class SerieController extends Controller
         foreach ($serie->seasons as $season) {
             for ($e = $season->episodes->count() + 1; $e <= $request->episodesPerSeanson; $e++) {
                 $episode = Episode::create([
-                    'number' => 2,
-                    'season_id' => 1, // substitua 1 pelo valor correto da season_id
+                    'number' =>$e,
+                    'season_id' => $season->id, // substitua 1 pelo valor correto da season_id
                 ]);
             }
         }
 
-        return to_route('series.index')->with('mensagem.Sucesso', "Série {$series->nome} atualizado com sucesso! ");
+        return to_route('series.index')->with('mensagem.Sucesso', "Série {$serie->nome} atualizado com sucesso! ");
     }
 }
