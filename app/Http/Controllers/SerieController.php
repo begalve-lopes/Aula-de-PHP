@@ -54,9 +54,14 @@ class SerieController extends Controller
         return view('series.edit', ['serie' => $series]);
     }
 
-    public function update(Serie $series, SeriesFormRequest $request)
+    public function update($id, SeriesFormRequest $request)
     {
-        $series->update($request->all());
+        $series=Serie::find($id);
+        DB::beginTransaction();
+            $series->update($request->all());
+            $series->seasons->update($request->all());
+            $series->episodes->update($request->all());
+        DB::commit();
         return to_route('series.index')->with('mensagem.Sucesso', "Série {$series->nome} atualizado com sucesso! ");
     }
 }

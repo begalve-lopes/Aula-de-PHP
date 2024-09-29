@@ -3,17 +3,24 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
 use App\Http\Requests\SeriesFormRequest;
 use App\Models\Serie;
 use App\Repositories\SeriesRepository;
+use GuzzleHttp\Psr7\Response;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 
 class SeriesCOntroller extends Controller
 {
     public function __construct(private SeriesRepository $Seriesrepository){}
 
-    public function index(){
-        return Serie::all();
+    public function index(Request $request){
+        $query=Serie::query();
+        if($request->has('nome')){
+            $query->whereNome($request->nome);
+        }
+        return $query->paginate(5);
     }
 
     public function store(SeriesFormRequest $request){
@@ -35,8 +42,13 @@ class SeriesCOntroller extends Controller
         return $series;
     }
 
-    public function destroy(int $series){
-        Serie::destroy($series);
-        return response()->noContent();
+    public function destroy(Serie $series,SeriesFormRequest $request){
+        dd($request->user());
+        if(!$series->delete($request->all())){
+            return response()->json([
+                'error'=>'Not found'
+            ],HttpResponse::HTTP_NOT_FOUND);
+        }
+        return $series;
     }
 }
