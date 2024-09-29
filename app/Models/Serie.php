@@ -8,7 +8,11 @@ use Illuminate\Database\Eloquent\Model;
 class Serie extends Model
 {
     use HasFactory;
-    protected $fillable=['nome','cover'];
+    protected $fillable=['nome','cover',];
+
+    public function episodes(){
+        return $this->hasManyThrough(Episode::class,Season::class);
+    }
 
     public function seasons(){
         return $this->hasMany(Season::class,'series_id');

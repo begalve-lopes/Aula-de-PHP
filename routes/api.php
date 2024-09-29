@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -16,4 +15,15 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+
+Route::apiResource('/series',\App\Http\Controllers\Api\SeriesCOntroller::class);
+Route::model('series', \App\Models\Serie::class);
+
+Route::get('/series/{series}/season', function($series) {
+    return $series->seasons;
+});
+
+Route::get('/series/{series}/episodes', function($series) {
+    return $series->episodes;
 });

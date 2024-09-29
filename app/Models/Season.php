@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Season extends Model
 {
     use HasFactory;
-    protected $fillable= ['number','season_id','series_id',];
+    protected $fillable= ['number','series_id',];
 
     public function series(){
         return $this->belongTo(Serie::class);
